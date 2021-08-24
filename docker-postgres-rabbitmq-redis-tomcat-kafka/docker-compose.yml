@@ -1,0 +1,64 @@
+version: '3'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:3.3.1
+    container_name: docker-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "22181:2181"
+
+  kafka:
+    container_name: docker-kafka
+    image: confluentinc/cp-kafka:3.3.1
+    depends_on:
+      - zookeeper
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  db:
+    image: postgres:alpine3.13
+    container_name: docker-postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: docker
+      POSTGRES_DB: local_godam_integration
+
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    container_name: docker-rabbitmq
+    restart: always
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    environment:
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+      RABBITMQ_PID_FILE: /var/lib/rabbitmq/docker/rabbitmq
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: guest
+
+  redis:
+    image: redis:alpine3.13
+    container_name: docker-redis
+    environment:
+      REDIS_PORT: 6379
+    ports:
+      - "6379:6379"
+  tomcat:
+    image: tomcat:alpine
+    container_name: tomcat
+    # ports: host_post:docker_port
+    ports:
+      - "80:8080"
