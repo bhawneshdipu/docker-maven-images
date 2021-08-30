@@ -1,0 +1,58 @@
+version: "3.8"
+services:
+  docker-mysql:
+    container_name: docker-mysql
+    hostname: docker-mysql.localhost.com
+    image: bhawnesh_dipu/docker-mysql:v0
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    env_file:
+      - ../docker-mysql/src/main/resources/mysql-env.env
+    volumes:
+      - mysql-data:/var/lib/mysql
+    build:
+      context: ../docker-mysql/src/main/resources/
+      dockerfile: Dockerfile
+    ports:
+      - "13306:13306"
+      - "3306:3306"
+
+  docker-rabbitmq:
+    container_name: docker-rabbitmq
+    hostname: docker-rabbitmq.localhost.com
+    image: bhawnesh_dipu/docker-rabbitmq-alpine:v0
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    working_dir: /code
+    entrypoint:
+      - /code/rabbitmq-entrypoint.sh
+    command:
+      - cp -R ./src/main/resources/* /code/
+    build:
+      context: ../docker-rabbitmq/src/main/resources/
+      dockerfile: Dockerfile
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    env_file:
+      - ../docker-rabbitmq/src/main/resources/rabbitmq-env.env
+    tty: true
+
+  docker-spring-integration:
+    container_name: docker-spring-integration
+    hostname: docker-spring-integration.localhost.com
+    image: bhawnesh_dipu/docker-spring-integration:v0
+    restart: always
+    env_file:
+      - src/main/resources/spring-integration-env.env
+    build:
+      context: target
+      dockerfile: Dockerfile
+    ports:
+      - "18081:18081"
+      - "15005:15005"
+
+volumes:
+  mysql-data:
+  rabbitmq-data:
+

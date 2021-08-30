@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  docker-angular:
+    container_name: docker-angular
+    hostname: docker-angular.localhost.com
+    image: bhawnesh_dipu/docker-angular:v0
+    restart: always
+    env_file:
+      - src/main/resources/angular-env.env
+    build:
+      context: target
+      dockerfile: Dockerfile
+    ports:
+      - "18080:8080"
